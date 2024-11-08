@@ -29,6 +29,11 @@
             border-radius: 4px;
             display: none;
         }
+        .selector {
+            margin: 20px 0;
+            display: flex;
+            gap: 20px;
+        }
     </style>
 </head>
 
@@ -46,11 +51,20 @@
                     <label for="inTxt" class="field-label">Input text</label>
                     <textarea id="inTxt" class="text-field area w-input" placeholder="Paste your text here..."></textarea>
                     
-                    <div style="margin: 20px 0;">
+                    <div class="selector">
+                        <label class="field-label">
+                            <input type="radio" name="mode" value="extract" checked> Extract range
+                        </label>
+                        <label class="field-label">
+                            <input type="radio" name="mode" value="remove"> Remove range
+                        </label>
+                    </div>
+
+                    <div class="selector">
                         <label class="field-label">
                             <input type="radio" name="direction" value="left" checked> Start from left
                         </label>
-                        <label class="field-label" style="margin-left: 20px;">
+                        <label class="field-label">
                             <input type="radio" name="direction" value="right"> Start from right
                         </label>
                     </div>
@@ -66,7 +80,7 @@
                         </div>
                     </div>
                     
-                    <a href="#" class="button w-button" onclick="extractText(); return false;">Extract</a>
+                    <a href="#" class="button w-button" onclick="processText(); return false;">Process</a>
                 </form>
 
                 <div id="result" class="result-area" style="display: none;" onclick="copyToClipboard(this)"></div>
@@ -81,21 +95,30 @@
     </div>
 
     <script>
-        function extractText() {
+        function processText() {
             const input = document.getElementById("inTxt").value;
             const startPos = parseInt(document.getElementById("startPos").value);
             const endPos = parseInt(document.getElementById("endPos").value);
             const direction = document.querySelector('input[name="direction"]:checked').value;
+            const mode = document.querySelector('input[name="mode"]:checked').value;
             
             const lines = input.split('\n').filter(line => line.trim());
             let result = '';
 
             for (let line of lines) {
                 if (direction === 'left') {
-                    result += line.substring(startPos, endPos) + '\n';
+                    if (mode === 'extract') {
+                        result += line.substring(startPos, endPos) + '\n';
+                    } else { // remove
+                        result += line.substring(0, startPos) + line.substring(endPos) + '\n';
+                    }
                 } else {
                     let len = line.length;
-                    result += line.substring(len - endPos, len - startPos) + '\n';
+                    if (mode === 'extract') {
+                        result += line.substring(len - endPos, len - startPos) + '\n';
+                    } else { // remove
+                        result += line.substring(0, len - endPos) + line.substring(len - startPos) + '\n';
+                    }
                 }
             }
 
