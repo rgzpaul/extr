@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8" />
+    <title>Text Range Extractor</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <link href="https://assets.website-files.com/6246ac7990532afc2998139b/css/bulkr.2901e6f38.css" rel="stylesheet" type="text/css" />
+    <style>
+        textarea { resize: vertical; }
+        .result-area {
+            background: #fafafa;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            font-family: monospace;
+            white-space: pre;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .result-area:hover {
+            background: #f5f5f5;
+        }
+        .copy-feedback {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #006e81;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="section wf-section">
+        <div class="container">
+            <h1>Extr</h1>
+            <h2>Text Range Extractor</h2>
+        </div>
+    </div>
+    <div class="section grow wf-section">
+        <div class="container">
+            <div class="form w-form">
+                <form id="extract-form">
+                    <label for="inTxt" class="field-label">Input text</label>
+                    <textarea id="inTxt" class="text-field area w-input" placeholder="Paste your text here..."></textarea>
+                    
+                    <div style="margin: 20px 0;">
+                        <label class="field-label">
+                            <input type="radio" name="direction" value="left" checked> Start from left
+                        </label>
+                        <label class="field-label" style="margin-left: 20px;">
+                            <input type="radio" name="direction" value="right"> Start from right
+                        </label>
+                    </div>
+
+                    <div class="form-line">
+                        <div class="text-field-wrapper">
+                            <label for="startPos" class="field-label">Start position</label>
+                            <input type="number" class="text-field w-input" min="0" value="0" id="startPos" />
+                        </div>
+                        <div class="text-field-wrapper">
+                            <label for="endPos" class="field-label">End position</label>
+                            <input type="number" class="text-field w-input" min="0" value="0" id="endPos" />
+                        </div>
+                    </div>
+                    
+                    <a href="#" class="button w-button" onclick="extractText(); return false;">Extract</a>
+                </form>
+
+                <div id="result" class="result-area" style="display: none;" onclick="copyToClipboard(this)"></div>
+                <div id="copyFeedback" class="copy-feedback">Copied to clipboard!</div>
+            </div>
+        </div>
+    </div>
+    <div class="section wf-section">
+        <div class="container">
+            <div>© <a href="https://minisoft.it/">Minisoft</a> — All rights reserved</div>
+        </div>
+    </div>
+
+    <script>
+        function extractText() {
+            const input = document.getElementById("inTxt").value;
+            const startPos = parseInt(document.getElementById("startPos").value);
+            const endPos = parseInt(document.getElementById("endPos").value);
+            const direction = document.querySelector('input[name="direction"]:checked').value;
+            
+            const lines = input.split('\n').filter(line => line.trim());
+            let result = '';
+
+            for (let line of lines) {
+                if (direction === 'left') {
+                    result += line.substring(startPos, endPos) + '\n';
+                } else {
+                    let len = line.length;
+                    result += line.substring(len - endPos, len - startPos) + '\n';
+                }
+            }
+
+            const resultArea = document.getElementById("result");
+            resultArea.textContent = result;
+            resultArea.style.display = 'block';
+        }
+
+        function copyToClipboard(element) {
+            const text = element.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const feedback = document.getElementById("copyFeedback");
+                feedback.style.display = 'block';
+                setTimeout(() => {
+                    feedback.style.display = 'none';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
