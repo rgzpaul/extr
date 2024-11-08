@@ -34,6 +34,18 @@
             display: flex;
             gap: 20px;
         }
+        .preview-area {
+            font-family: monospace;
+            white-space: pre;
+            margin: 10px 0;
+            line-height: 1.5;
+            color: #666;
+            text-align: left;
+        }
+        .highlight {
+            background: #006e81;
+            color: white;
+        }
     </style>
 </head>
 
@@ -49,8 +61,10 @@
             <div class="form w-form">
                 <form id="extract-form">
                     <label for="inTxt" class="field-label">Input text</label>
-                    <textarea id="inTxt" class="text-field area w-input" placeholder="Paste your text here..."></textarea>
+                    <textarea id="inTxt" class="text-field area w-input" placeholder="Paste your text here..." oninput="validatePositions()"></textarea>
                     
+                    <div id="preview" class="preview-area"></div>
+
                     <div class="selector">
                         <label class="field-label">
                             <input type="radio" name="mode" value="extract" checked> Extract range
@@ -72,11 +86,11 @@
                     <div class="form-line">
                         <div class="text-field-wrapper">
                             <label for="startPos" class="field-label">Start position</label>
-                            <input type="number" class="text-field w-input" min="0" value="0" id="startPos" />
+                            <input type="number" class="text-field w-input" min="0" value="0" id="startPos" oninput="validatePositions()" />
                         </div>
                         <div class="text-field-wrapper">
                             <label for="endPos" class="field-label">End position</label>
-                            <input type="number" class="text-field w-input" min="0" value="0" id="endPos" />
+                            <input type="number" class="text-field w-input" min="0" value="0" id="endPos" oninput="validatePositions()" />
                         </div>
                     </div>
                     
@@ -95,6 +109,48 @@
     </div>
 
     <script>
+        function validatePositions() {
+            const startPos = document.getElementById("startPos");
+            const endPos = document.getElementById("endPos");
+            
+            if (parseInt(startPos.value) > parseInt(endPos.value)) {
+                endPos.value = startPos.value;
+            }
+            
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const input = document.getElementById("inTxt").value;
+            const startPos = parseInt(document.getElementById("startPos").value) || 0;
+            const endPos = parseInt(document.getElementById("endPos").value) || 0;
+            const direction = document.querySelector('input[name="direction"]:checked').value;
+            
+            const lines = input.split('\n').filter(line => line.trim());
+            if (lines.length === 0) return;
+
+            let preview = '';
+            for (let i = 0; i < Math.min(3, lines.length); i++) {
+                const line = lines[i];
+                if (direction === 'left') {
+                    preview += line.substring(0, startPos) + 
+                              '<span class="highlight">' + 
+                              line.substring(startPos, endPos) + 
+                              '</span>' + 
+                              line.substring(endPos) + '\n';
+                } else {
+                    let len = line.length;
+                    preview += line.substring(0, len - endPos) + 
+                              '<span class="highlight">' + 
+                              line.substring(len - endPos, len - startPos) + 
+                              '</span>' + 
+                              line.substring(len - startPos) + '\n';
+                }
+            }
+            
+            document.getElementById("preview").innerHTML = preview;
+        }
+
         function processText() {
             const input = document.getElementById("inTxt").value;
             const startPos = parseInt(document.getElementById("startPos").value);
